@@ -70,8 +70,7 @@ void draw(void);
 unsigned long RGB(int r, int g, int b);
 
 
-// void *one_second_loop(void *argument);
-void one_second_loop();
+
 
 struct coord {
  int x;
@@ -79,16 +78,11 @@ struct coord {
 } dot;
 
 
-Belts belts[4];
-Luggege luggage[4];
+Belts belts[MAX_BELTS];
+Luggege luggage[MAX_LUGGEGE];
+void one_second_loop();
 
 int main() {
-
-    // thread t1(one_second_loop);
-    // t1.join();
-    // pthread_t pthread;
-    // int i1 = pthread_create(&pthread, NULL, one_second_loop, (void*) NULL);
-    // pthread_join(pthread, NULL);
 
     belts[0].set_name("B1");
     belts[0].set_speed(2);
@@ -183,9 +177,9 @@ void init_gui() {
     red = RGB(255,0,0);
     blue = RGB(0,0,255);
     screen = ScreenOfDisplay(dis, scrn_num);
-    dot.x = (screen->width/2 - screen->width/10); // start position
-    dot.y = (screen->height/2 - screen->height/10); 
-    win = XCreateSimpleWindow(dis, DefaultRootWindow(dis), 0, 0, screen->width/2, screen->height/2, 5, white, black);
+    dot.x = 0;(screen->width/2 - screen->width/10); // start position
+    dot.y = 0;(screen->height/2 - screen->height/10); 
+    win = XCreateSimpleWindow(dis, DefaultRootWindow(dis), 0, 0, 640, 480, 5, white, black);
     XSetStandardProperties(dis, win, "Luggege belts", NULL, None, NULL, 0, NULL);
     XSelectInput(dis, win, ExposureMask | ButtonPressMask | KeyPressMask);
     gc = XCreateGC(dis, win, 0,0);
@@ -210,43 +204,19 @@ inline unsigned long RGB(int r, int g, int b) {
     return b + (g<<8) + (r<<16);
 }
 
-
-    time_t timer,timer1;
-
 void one_second_loop(){
-    // void *one_second_loop(void *argument){
-
-//   struct tm y2k = {0};
 static int useconds;
 
-//   y2k.tm_hour = 0;   y2k.tm_min = 0; y2k.tm_sec = 0;
-//   y2k.tm_year = 100; y2k.tm_mon = 0; y2k.tm_mday = 1;
-
-//   ctime(&timer);  /* get current time; same as: timer = time(NULL)  */
-//   printf ("T %lu ", timer);
-//    // timer = ctime(NULL);
-//   if(timer - timer1 > 1000){
-//     timer1 = timer;
-//     double seconds = timer - timer1;
-//     printf ("%.f seconds since January 1, 2000 in the current timezone", seconds);
-//   }
-
-  
-    // while (1) {   
-    
-    usleep(1);//wait 1 second
+    usleep(1);//wait 1 usecond
     useconds += 1;
-    if(useconds > 1000){
+    if(useconds > 10000){
         useconds = 0;
         printf("\ec"); // clear terminal
-        // printf("\x1b\x5b\x32\x41"); // move cursor up 2
-        // printf("\x0D\x1B\x5B\x4B"); // clear line
         for(int i= 0; i < MAX_BELTS; i++){
             printf("%s %d ",belts[i].get_name(), belts[i].luggeg);
         }
         printf("\n");
         
-        // printf("\x0D\x1B\x5B\x4B"); // // clear line
         bool no_luggege = true;
         for(int i= 0; i < MAX_LUGGEGE; i++){
             if(luggage[i].enable){
@@ -258,19 +228,5 @@ static int useconds;
             printf("NO_LUGGAGE\n");
         }
     }
-    // }
 }
-// void *task(void *argument){
-//     char* msg;
-//     msg = (char*)argument;
-//     std::cout << msg << std::endl;
-// }
 
-// int main(){
-//     pthread_t pthread;
-//     int i1, i2;
-//     i1 = pthread_create(&pthread, NULL, one_second_loop, (void*) "thread 1");
-
-//     pthread_join(pthread, NULL);
-//     return 0;
-// }
