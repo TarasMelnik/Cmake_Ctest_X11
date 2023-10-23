@@ -14,8 +14,8 @@ link_directories(${X11_LIBRARIES})
 #Find X11 lib
 
 
-SET(CMAKE_C_FLAGS "-O3 -lpthread -lX11 -Wall")
-SET(CMAKE_CXX_FLAGS "-O3 -lpthread -lX11 -Wall")
+SET(CMAKE_C_FLAGS "-O3 -lpthread -lX11 -Wall -std=c++0x -std=c++11 -pthread")
+SET(CMAKE_CXX_FLAGS "-O3 -lpthread -lX11 -Wall -std=c++0x -std=c++11 -pthread")
 
 if(X11_FOUND)
     add_executable(luggegebin luggege_belts.cpp)
