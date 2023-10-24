@@ -55,7 +55,7 @@ private:
     float _speed;
 };
 Belts::Belts(){};
-
+void init();
 
 // GUI
 Display *dis;
@@ -65,13 +65,10 @@ Window win;
 GC gc;
 unsigned long black, white, red, blue;
 void init_gui(void);
+void run_gui(void);
 void _close(void);
 void draw(void);
 unsigned long RGB(int r, int g, int b);
-
-
-
-
 struct coord {
  int x;
  int y;
@@ -84,6 +81,20 @@ void one_second_loop();
 
 int main() {
 
+    init();
+    init_gui();
+
+    while (1)
+    {
+        one_second_loop();
+        run_gui();
+       
+    }
+    
+    return 0;
+}
+
+void init(){
     belts[0].set_name("B1");
     belts[0].set_speed(2);
     belts[1].set_name("B2");
@@ -94,79 +105,72 @@ int main() {
     luggage[1].set_name("L2");
     luggage[2].set_name("L3");
     luggage[3].set_name("L4");
+}
 
-    init_gui();
+void one_second_loop(){
+    static unsigned int useconds;
+
+    usleep(1); //wait 1 usecond
+    useconds += 1;
+    if(useconds > 10000){
+        useconds = 0;
+        printf("\ec"); // clear terminal
+        for(int i= 0; i < MAX_BELTS; i++){
+            printf("%s %d ",belts[i].get_name(), belts[i].luggeg);
+        }
+        printf("\n");
+        
+        bool no_luggege = true;
+        for(int i= 0; i < MAX_LUGGEGE; i++){
+            if(luggage[i].enable){
+                printf("%s %.1f \n",luggage[i].get_name(), luggage[i].distanse);
+                no_luggege = false;
+            }
+        }
+        if(no_luggege){
+            printf("NO_LUGGAGE\n");
+        }
+    }
+}
+
+void run_gui(void){
     XEvent event;
     KeySym key;
     char text[255];
-    
-    while (1)
-    {
-        one_second_loop();
-        while (XPending(dis) > 0) {
+
+    while (XPending(dis) > 0) {
         
             XNextEvent(dis, &event);
             if(event.type == Expose && event.xexpose.count == 0) {
                 draw();
             }
             if(event.type == KeyPress && XLookupString(&event.xkey, text, 255, &key,0) == 1) {
-                switch (text[0])
-                {
-                case 'q':
+                if(text[0] == 'q'){
                     _close();
-                    break;
-                case '1':
-                    if(luggage[0].enable){
-                        luggage[0].enable = false;
-                    }else {
-                        luggage[0].enable = true;
-                    }
-                    // printf("%s %d %s %d\n",belts[0].get_name(), belts[0].luggeg, luggage[1].get_name(), (int)luggage[0].enable);
-                    break;
-                case '2':
-                    if(luggage[1].enable){
-                        luggage[1].enable = false;
-                    }else {
-                        luggage[1].enable = true;
-                    }
-                    break;
-                case '3':
-                    if(luggage[2].enable){
-                        luggage[2].enable = false;
-                    }else {
-                        luggage[2].enable = true;
-                    }
-                    break;
-                case '4':
-                    if(luggage[3].enable){
-                        luggage[3].enable = false;
-                    }else {
-                        luggage[3].enable = true;
-                    }
-                    break;
-                
-                default:
-                    //_X_ATTRIBUTE_PRINTF("You pressed the %s key!\n",text);
-                    // printf("You pressed the %s key!\n",text);
-                    // std::cout << "You pressed the " << text << " key!\n";
-                    break;
                 }
-            
+                
+                for(int i = 0; i < MAX_LUGGEGE; i++){
+                    if((char)(i+49) == text[0]){ // 49 = '1'
+                        if(luggage[i].enable){
+                            luggage[i].enable = false;
+                        }else {
+                            luggage[i].enable = true;
+                        }
+                    }
+                }
             }
+
             if(event.type == ButtonPress) {
-                 int x = event.xbutton.x, y=event.xbutton.y;
-                 XSetForeground(dis,gc,red);
-                 XDrawLine(dis,win,gc,dot.x,dot.y,x,y);
-                 XSetForeground(dis,gc,blue);
-                 strcpy(text,"1");
-                 XDrawString(dis,win,gc,x,y,text,strlen(text));
-                 dot.x = x;
-                 dot.y = y;
+                int x = event.xbutton.x, y=event.xbutton.y;
+                XSetForeground(dis,gc,red);
+                XDrawLine(dis,win,gc,dot.x,dot.y,x,y);
+                XSetForeground(dis,gc,blue);
+                strcpy(text,"1");
+                XDrawString(dis,win,gc,x,y,text,strlen(text));
+                dot.x = x;
+                dot.y = y;
              }
         }
-    }
-    
-    return 0;
 }
 
 void init_gui() {
@@ -179,7 +183,7 @@ void init_gui() {
     screen = ScreenOfDisplay(dis, scrn_num);
     dot.x = 0;(screen->width/2 - screen->width/10); // start position
     dot.y = 0;(screen->height/2 - screen->height/10); 
-    win = XCreateSimpleWindow(dis, DefaultRootWindow(dis), 0, 0, 640, 480, 5, white, black);
+    win = XCreateSimpleWindow(dis, DefaultRootWindow(dis), 0, 0, 640, 640, 5, white, black);
     XSetStandardProperties(dis, win, "Luggege belts", NULL, None, NULL, 0, NULL);
     XSelectInput(dis, win, ExposureMask | ButtonPressMask | KeyPressMask);
     gc = XCreateGC(dis, win, 0,0);
@@ -204,29 +208,4 @@ inline unsigned long RGB(int r, int g, int b) {
     return b + (g<<8) + (r<<16);
 }
 
-void one_second_loop(){
-static int useconds;
-
-    usleep(1);//wait 1 usecond
-    useconds += 1;
-    if(useconds > 10000){
-        useconds = 0;
-        printf("\ec"); // clear terminal
-        for(int i= 0; i < MAX_BELTS; i++){
-            printf("%s %d ",belts[i].get_name(), belts[i].luggeg);
-        }
-        printf("\n");
-        
-        bool no_luggege = true;
-        for(int i= 0; i < MAX_LUGGEGE; i++){
-            if(luggage[i].enable){
-                printf("%s %.1f \n",luggage[i].get_name(), luggage[i].distanse);
-                no_luggege = false;
-            }
-        }
-        if(no_luggege){
-            printf("NO_LUGGAGE\n");
-        }
-    }
-}
 
