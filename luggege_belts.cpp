@@ -41,7 +41,7 @@ Luggege::Luggege(){};
 
 class Belts {
 public:
-    //friend class Luggage;
+    // Belts(char[] , float);
     Belts();
     
     //void update(void);
@@ -56,8 +56,37 @@ private:
     char _name[4];
     float _speed;
 };
-Belts::Belts(){};
+
+Belts::Belts(){}
+// char name[], float speed){
+//     set_name(name);
+//     set_speed(speed);
+// };
+
 void init();
+// class student
+// {
+//     int rno;
+//     char name[50];
+//     double fee;
+//     public:
+//     student(int,char[],double);
+//     student(student &t)       //copy constructor
+//     {
+//         rno=t.rno;
+//         strcpy(name,t.name);
+//         fee=t.fee;
+//     }
+//     void display();
+     
+// };
+//     student::student(int no,char n[],double f)
+//     {
+//         rno=no;
+//         strcpy(name,n);
+//         fee=f;
+//     }   
+
 
 // GUI
 Display *dis;
@@ -87,61 +116,46 @@ int main() {
     init();
     init_gui();
 
+    thread t1(one_second_loop);
+   printf("FUCKUP111111");
+    thread t2(run_gui);
+    // printf("FUCKUP222222");
+    // t2.join();
+    // printf("FUCKUP3333333");
+    // t1.join();
+    // printf("FUCKUP4444444");
+    // pthread_t pthread;
+    // int i1 = pthread_create(&pthread, NULL, one_second_loop, (void*) NULL);
+    // pthread_join(pthread, NULL);
+
     while (1){
-        one_second_loop();
-        run_gui();
+        printf("FUCKUP");
+        //one_second_loop();
+        // run_gui();
     }
     
     return 0;
 }
 
 void  update(){
-    static unsigned short tic;
-    static unsigned short tic_old;
+    static unsigned int tic;
+    // static unsigned short tic_old;
     usleep(1);
     tic += 1;
-    unsigned short diff_tic = tic - tic_old;
-    if(diff_tic >= 1000){
-        tic_old = tic;
-        printf("tic  %d\n", tic);
-    }
+    // unsigned short diff_tic = tic - tic_old;
+    // if(diff_tic >= 1000){
+    //     tic_old = tic;
+    //     printf("tic  %d\n", tic);
+    // }
 
     // belts
     if(luggage[0].enable){
-        ///
+        if(luggage[0].start)
+        luggage[0].start = tic;
     }
 }
 
 void init(){
-    // this can init in "for" but...
-// char str[80];
-//   strcpy (str,"these ");
-//   strcat (str,"strings ");
-//   strcat (str,"are ");
-//   strcat (str,"concatenated.");
-//   puts (str);
-
-//     char str[33];
-//     char p[34];
-
-//     memset(text_low, 0, sizeof(text));
-//     itoa((int)*_time, p, 10);
-
-//     strcat(text_low, WARHEAD_WARNING_PROTECT_TIME_SYNC);
-// #pragma GCC diagnostic push
-// #pragma GCC diagnostic ignored "-Wstringop-truncation"
-//                 strncat(text_low, p, 4);
-// #pragma GCC diagnostic pop
-
-//     for(int i= 0; i < MAX_BELTS; i++){
-
-//         belts[0].set_name("B1");
-//         printf("%s %d ",belts[i].get_name(), belts[i].luggeg);
-//     }
-    
-//     for(int i= 0; i < MAX_LUGGEGE; i++){
-//             printf("%s %.1f \n",luggage[i].get_name(), luggage[i].distanse);
-//     }
 
     belts[0].set_name("B1");
     belts[0].set_speed(1);
@@ -161,27 +175,32 @@ void init(){
 
 void one_second_loop(){
     static time_t seconds;
+    while (1)
+    {
 
-    if(time(NULL) - seconds >= 1){
-        seconds = time(NULL);
+    sleep(1);
+
+    // if(time(NULL) - seconds >= 1){
+    //     seconds = time(NULL);
         
-        // printf("\ec"); // clear terminal
-        for(int i= 0; i < MAX_BELTS; i++){
-            printf("%s %d ",belts[i].get_name(), belts[i].luggeg);
-        }
-        printf("\n");
+    //     // printf("\ec"); // clear terminal
+    //     for(int i= 0; i < MAX_BELTS; i++){
+    //         printf("%s %d ",belts[i].get_name(), belts[i].luggeg);
+    //     }
+    //     printf("\n");
         
-        bool no_luggege = true;
-        for(int i= 0; i < MAX_LUGGEGE; i++){
-            if(luggage[i].enable){
-                printf("%s %.1f \n",luggage[i].get_name(), luggage[i].distanse);
-                no_luggege = false;
-            }
-        }
-        if(no_luggege){
+    //     bool no_luggege = true;
+    //     for(int i= 0; i < MAX_LUGGEGE; i++){
+    //         if(luggage[i].enable){
+    //             printf("%s %.1f \n",luggage[i].get_name(), luggage[i].distanse);
+    //             no_luggege = false;
+    //         }
+    //     }
+    //     if(no_luggege){
             printf("NO_LUGGAGE\n");
-        }
+    //     }
         
+    // }
     }
 }
 
@@ -189,40 +208,41 @@ void run_gui(void){
     XEvent event;
     KeySym key;
     char text[255];
-
-    while (XPending(dis) > 0) {
-        
-            XNextEvent(dis, &event);
-            if(event.type == Expose && event.xexpose.count == 0) {
-                draw();
-            }
-            if(event.type == KeyPress && XLookupString(&event.xkey, text, 255, &key,0) == 1) {
-                if(text[0] == 'q'){
-                    _close();
+    while (1){
+        while (XPending(dis) > 0) {
+            
+                XNextEvent(dis, &event);
+                if(event.type == Expose && event.xexpose.count == 0) {
+                    draw();
                 }
-                
-                for(int i = 0; i < MAX_LUGGEGE; i++){
-                    if((char)(i+49) == text[0]){ // 49 = '1'
-                        if(luggage[i].enable){
-                            luggage[i].enable = false;
-                        }else {
-                            luggage[i].enable = true;
+                if(event.type == KeyPress && XLookupString(&event.xkey, text, 255, &key,0) == 1) {
+                    if(text[0] == 'q'){
+                        _close();
+                    }
+                    
+                    for(int i = 0; i < MAX_LUGGEGE; i++){
+                        if((char)(i+49) == text[0]){ // 49 = '1'
+                            if(luggage[i].enable){
+                                luggage[i].enable = false;
+                            }else {
+                                luggage[i].enable = true;
+                            }
                         }
                     }
                 }
-            }
 
-            if(event.type == ButtonPress) {
-                int x = event.xbutton.x, y=event.xbutton.y;
-                XSetForeground(dis,gc,red);
-                XDrawLine(dis,win,gc,dot.x,dot.y,x,y);
-                XSetForeground(dis,gc,blue);
-                strcpy(text,"1");
-                XDrawString(dis,win,gc,x,y,text,strlen(text));
-                dot.x = x;
-                dot.y = y;
-             }
-        }
+                if(event.type == ButtonPress) {
+                    int x = event.xbutton.x, y=event.xbutton.y;
+                    XSetForeground(dis,gc,red);
+                    XDrawLine(dis,win,gc,dot.x,dot.y,x,y);
+                    XSetForeground(dis,gc,blue);
+                    strcpy(text,"1");
+                    XDrawString(dis,win,gc,x,y,text,strlen(text));
+                    dot.x = x;
+                    dot.y = y;
+                }
+            }
+    }
 }
 
 void init_gui() {
