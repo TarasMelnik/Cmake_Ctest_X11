@@ -127,135 +127,161 @@ Luggege luggage[MAX_LUGGEGE];
 void one_second_loop();
 void update();
 
-void belts1_task();
-void belts2_task();
-void belts3_task();
-void belts4_task();
-
-
-
-
-
-
-//counts every number that is added to the queue
-static long long producer_count = 0;
-//counts every number that is taken out of the queue
-static long long consumer_count = 0;
-
-
-void generateNumbers(std::queue<int> & bl1, std::queue<int> & bl2, std::atomic<bool> & workdone)//,std::condition_variable & cv, std::mutex & m, std::atomic<bool> & workdone)
-{
-    // while(!workdone.load())
-    // {
-    //     std::unique_lock<std::mutex> lk(m);
-    //     int rndNum = rand() % 100;
-    //     numbers.push(rndNum);
-    //     producer_count++;
-    //     cv.notify_one(); // Notify worker
-    //     cv.wait(lk); // Wait for worker to complete
-    // }
-    int distance = 0;
-    while(!workdone.load() || !bl1.empty())
-    {
-        producer_count += 1;
-        distance += 1;
-        if(distance >= 30000000){
-            bl2.push(1);
-            // std::cout << "push"<< std::endl;
-            distance = 0;
-        }
-        if(!bl1.empty()){
-            int i = bl1.front();
-            std::cout << "Belts1 "<< i << std::endl;
-            bl1.pop();
-        }
+void belts1_task(std::queue<int> & get, std::queue<int> & send){
+    while (1){
+        sleep(1);
+        printf("belts1\n");
+    }
+}
+void belts2_task(std::queue<int> & get, std::queue<int> & send){
+    while (1){
+        sleep(1);
+        printf("belts2\n");
+    }
+}
+void belts3_task(std::queue<int> & get, std::queue<int> & send){
+    while(1){
+        sleep(1);
+        printf("belts3\n");
+    }
+}
+void belts4_task(std::queue<int> & get, std::queue<int> & send){
+    while (1){
+        sleep(1);
+        printf("belts4\n");
     }
 }
 
 
 
-void work(std::queue<int> & bl1, std::queue<int> & bl2, std::atomic<bool> & workdone)//,std::condition_variable & cv, std::mutex & m, std::atomic<bool> & workdone)
-{
-    // while(!workdone.load() or !numbers.empty())
-    // {
-    //     std::unique_lock<std::mutex> lk(m);
-    //     cv.notify_one(); // Notify generator (placed here to avoid waiting for the lock)
-    //     if (numbers.empty())
-    //         cv.wait(lk); // Wait for the generator to complete
-    //     if (numbers.empty())
-    //         continue;
-    //     std::cout << "work"<< numbers.front() << std::endl;
-    //     numbers.pop();
-    //     consumer_count++;
-    //  }
-    int i = 0;
-    int cnt = 0;
-    while(!workdone.load() || !bl2.empty())
-    {
-        if(!bl2.empty()){
-            i = bl2.front();
-            if(i < MAX_LUGGEGE){
-                std::cout << "Belts2 "<< i << std::endl;
-                bl2.pop();
-            }
-        }
-        consumer_count++;
-        cnt += 1;
-        if(cnt >= 90000000){
-            bl1.push(2);
-            cnt = 0;
-        }
+
+
+
+
+// //counts every number that is added to the queue
+// static long long producer_count = 0;
+// //counts every number that is taken out of the queue
+// static long long consumer_count = 0;
+
+
+// void generateNumbers(std::queue<int> & bl1, std::queue<int> & bl2, std::atomic<bool> & workdone)//,std::condition_variable & cv, std::mutex & m, std::atomic<bool> & workdone)
+// {
+//     // while(!workdone.load())
+//     // {
+//     //     std::unique_lock<std::mutex> lk(m);
+//     //     int rndNum = rand() % 100;
+//     //     numbers.push(rndNum);
+//     //     producer_count++;
+//     //     cv.notify_one(); // Notify worker
+//     //     cv.wait(lk); // Wait for worker to complete
+//     // }
+//     int distance = 0;
+//     while(!workdone.load() || !bl1.empty())
+//     {
+//         producer_count += 1;
+//         distance += 1;
+//         if(distance >= 30000000){
+//             bl2.push(1);
+//             // std::cout << "push"<< std::endl;
+//             distance = 0;
+//         }
+//         if(!bl1.empty()){
+//             int i = bl1.front();
+//             std::cout << "Belts1 "<< i << std::endl;
+//             bl1.pop();
+//         }
+//     }
+// }
+
+
+
+// void work(std::queue<int> & bl1, std::queue<int> & bl2, std::atomic<bool> & workdone)//,std::condition_variable & cv, std::mutex & m, std::atomic<bool> & workdone)
+// {
+//     // while(!workdone.load() or !numbers.empty())
+//     // {
+//     //     std::unique_lock<std::mutex> lk(m);
+//     //     cv.notify_one(); // Notify generator (placed here to avoid waiting for the lock)
+//     //     if (numbers.empty())
+//     //         cv.wait(lk); // Wait for the generator to complete
+//     //     if (numbers.empty())
+//     //         continue;
+//     //     std::cout << "work"<< numbers.front() << std::endl;
+//     //     numbers.pop();
+//     //     consumer_count++;
+//     //  }
+//     int i = 0;
+//     int cnt = 0;
+//     while(!workdone.load() || !bl2.empty())
+//     {
+//         if(!bl2.empty()){
+//             i = bl2.front();
+//             if(i < MAX_LUGGEGE){
+//                 std::cout << "Belts2 "<< i << std::endl;
+//                 bl2.pop();
+//             }
+//         }
+//         consumer_count++;
+//         cnt += 1;
+//         if(cnt >= 90000000){
+//             bl1.push(2);
+//             cnt = 0;
+//         }
         
-    }
-}
+//     }
+// }
+
+// int main() {
+//     // std::condition_variable cv;
+//     // std::mutex m;
+//     std::atomic<bool> workdone(false);
+//     std::queue<int> belts_1;
+//     std::queue<int> belts_2;
+
+//     //start threads
+//     std::thread t1(generateNumbers, std::ref(belts_1), std::ref(belts_2), std::ref(workdone));//, std::ref(cv), std::ref(m), std::ref(workdone));
+//     std::thread t2(work, std::ref(belts_1),std::ref(belts_2), std::ref(workdone));//, std::ref(cv), std::ref(m), std::ref(workdone));
+
+
+//     //wait for 3 seconds, then join the threads
+//     std::this_thread::sleep_for(std::chrono::seconds(1));
+//     workdone = true;
+//     // cv.notify_all(); // To prevent dead-lock
+
+//     t1.join();
+//     t2.join();
+
+//     //output the counters
+//     std::cout << producer_count << std::endl;
+//     std::cout << consumer_count << std::endl;
+
+//     return 0;
+// }
+
+
+
+
+
+
+
+
+
+
+
 
 int main() {
-    // std::condition_variable cv;
-    // std::mutex m;
-    std::atomic<bool> workdone(false);
     std::queue<int> belts_1;
     std::queue<int> belts_2;
-
-    //start threads
-    std::thread t1(generateNumbers, std::ref(belts_1), std::ref(belts_2), std::ref(workdone));//, std::ref(cv), std::ref(m), std::ref(workdone));
-    std::thread t2(work, std::ref(belts_1),std::ref(belts_2), std::ref(workdone));//, std::ref(cv), std::ref(m), std::ref(workdone));
-
-
-    //wait for 3 seconds, then join the threads
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    workdone = true;
-    // cv.notify_all(); // To prevent dead-lock
-
-    t1.join();
-    t2.join();
-
-    //output the counters
-    std::cout << producer_count << std::endl;
-    std::cout << consumer_count << std::endl;
-
-    return 0;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-int main() {
-    std::queue<int> belts_1;
-    std::queue<int> belts_2;
+    std::queue<int> belts_3;
+    std::queue<int> belts_4;
     init();
     init_gui();
 
-    thread t1(one_second_loop);
-    thread t2(gui_task);
- 
+    std::thread t1(one_second_loop);
+    std::thread th_gui(gui_task);
+    std::thread th_1(belts1_task, std::ref(belts_1), std::ref(belts_2));
+    std::thread th_2(belts2_task, std::ref(belts_2), std::ref(belts_3));
+    std::thread th_3(belts3_task, std::ref(belts_3), std::ref(belts_4));
+    std::thread th_4(belts4_task, std::ref(belts_4), std::ref(belts_1));
     // t2.join();
     // t1.join();
 
