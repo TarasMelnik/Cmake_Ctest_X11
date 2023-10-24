@@ -12,11 +12,26 @@ extern "C" {
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <unistd.h>
-
-#include <pthread.h>
-
 #include <thread>
+#include <queue>
+
+
+
+////test
+#include <thread>
+#include <condition_variable>
+#include <queue>
+#include <cstdlib>
+#include <chrono>
+#include <ctime>
+#include <random>
+#include <atomic>
+
+
+
+
+
+
 
 #define NO_LUGGAGE "No luggage"
 #define MAX_LUGGEGE 4
@@ -35,14 +50,15 @@ public:
 	unsigned char belts_num {0};
     long int start {0};
 private:
-    char _name[4];
+    char _name[3];
 };
 Luggege::Luggege(){};
 
 class Belts {
 public:
-    // Belts(char[] , float);
-    Belts();
+    friend class Luggege;
+    
+    Belts(): len (10){};
     
     //void update(void);
 
@@ -51,13 +67,13 @@ public:
 	void set_name(const char* text){strncpy(_name,text, sizeof(_name)); }
     char* get_name(){return &_name[0];};
     int luggeg;
-    int len {10}; // meter
+    int len;
 private: 
-    char _name[4];
+    char _name[3];
     float _speed;
 };
 
-Belts::Belts(){}
+// Belts::Belts(){}
 // char name[], float speed){
 //     set_name(name);
 //     set_speed(speed);
@@ -96,7 +112,7 @@ Window win;
 GC gc;
 unsigned long black, white, red, blue;
 void init_gui(void);
-void run_gui(void);
+void gui_task(void);
 void _close(void);
 void draw(void);
 unsigned long RGB(int r, int g, int b);
@@ -111,28 +127,143 @@ Luggege luggage[MAX_LUGGEGE];
 void one_second_loop();
 void update();
 
-int main() {
+void belts1_task();
+void belts2_task();
+void belts3_task();
+void belts4_task();
 
+
+
+
+
+
+//counts every number that is added to the queue
+static long long producer_count = 0;
+//counts every number that is taken out of the queue
+static long long consumer_count = 0;
+
+
+void generateNumbers(std::queue<int> & bl1, std::queue<int> & bl2, std::atomic<bool> & workdone)//,std::condition_variable & cv, std::mutex & m, std::atomic<bool> & workdone)
+{
+    // while(!workdone.load())
+    // {
+    //     std::unique_lock<std::mutex> lk(m);
+    //     int rndNum = rand() % 100;
+    //     numbers.push(rndNum);
+    //     producer_count++;
+    //     cv.notify_one(); // Notify worker
+    //     cv.wait(lk); // Wait for worker to complete
+    // }
+    int distance = 0;
+    while(!workdone.load() || !bl1.empty())
+    {
+        producer_count += 1;
+        distance += 1;
+        if(distance >= 30000000){
+            bl2.push(1);
+            // std::cout << "push"<< std::endl;
+            distance = 0;
+        }
+        if(!bl1.empty()){
+            int i = bl1.front();
+            std::cout << "Belts1 "<< i << std::endl;
+            bl1.pop();
+        }
+    }
+}
+
+
+
+void work(std::queue<int> & bl1, std::queue<int> & bl2, std::atomic<bool> & workdone)//,std::condition_variable & cv, std::mutex & m, std::atomic<bool> & workdone)
+{
+    // while(!workdone.load() or !numbers.empty())
+    // {
+    //     std::unique_lock<std::mutex> lk(m);
+    //     cv.notify_one(); // Notify generator (placed here to avoid waiting for the lock)
+    //     if (numbers.empty())
+    //         cv.wait(lk); // Wait for the generator to complete
+    //     if (numbers.empty())
+    //         continue;
+    //     std::cout << "work"<< numbers.front() << std::endl;
+    //     numbers.pop();
+    //     consumer_count++;
+    //  }
+    int i = 0;
+    int cnt = 0;
+    while(!workdone.load() || !bl2.empty())
+    {
+        if(!bl2.empty()){
+            i = bl2.front();
+            if(i < MAX_LUGGEGE){
+                std::cout << "Belts2 "<< i << std::endl;
+                bl2.pop();
+            }
+        }
+        consumer_count++;
+        cnt += 1;
+        if(cnt >= 90000000){
+            bl1.push(2);
+            cnt = 0;
+        }
+        
+    }
+}
+
+int main() {
+    // std::condition_variable cv;
+    // std::mutex m;
+    std::atomic<bool> workdone(false);
+    std::queue<int> belts_1;
+    std::queue<int> belts_2;
+
+    //start threads
+    std::thread t1(generateNumbers, std::ref(belts_1), std::ref(belts_2), std::ref(workdone));//, std::ref(cv), std::ref(m), std::ref(workdone));
+    std::thread t2(work, std::ref(belts_1),std::ref(belts_2), std::ref(workdone));//, std::ref(cv), std::ref(m), std::ref(workdone));
+
+
+    //wait for 3 seconds, then join the threads
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    workdone = true;
+    // cv.notify_all(); // To prevent dead-lock
+
+    t1.join();
+    t2.join();
+
+    //output the counters
+    std::cout << producer_count << std::endl;
+    std::cout << consumer_count << std::endl;
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+int main() {
+    std::queue<int> belts_1;
+    std::queue<int> belts_2;
     init();
     init_gui();
 
     thread t1(one_second_loop);
-   printf("FUCKUP111111");
-    thread t2(run_gui);
-    // printf("FUCKUP222222");
+    thread t2(gui_task);
+ 
     // t2.join();
-    // printf("FUCKUP3333333");
     // t1.join();
-    // printf("FUCKUP4444444");
+
     // pthread_t pthread;
     // int i1 = pthread_create(&pthread, NULL, one_second_loop, (void*) NULL);
     // pthread_join(pthread, NULL);
 
-    while (1){
-        printf("FUCKUP");
-        //one_second_loop();
-        // run_gui();
-    }
+    while (1){ }
     
     return 0;
 }
@@ -174,37 +305,30 @@ void init(){
 }
 
 void one_second_loop(){
-    static time_t seconds;
-    while (1)
-    {
+    while (1) {
 
-    sleep(1);
+        sleep(1); // wait 1 second
+        printf("\ec"); // clear terminal
+        for(int i= 0; i < MAX_BELTS; i++){
+            printf("%s %d ",belts[i].get_name(), belts[i].luggeg);
+        }
+        printf("\n");
+        
+        bool no_luggege = true;
+        for(int i= 0; i < MAX_LUGGEGE; i++){
+            if(luggage[i].enable){
+                printf("%s %.1f \n",luggage[i].get_name(), luggage[i].distanse);
+                no_luggege = false;
+            }
+        }
 
-    // if(time(NULL) - seconds >= 1){
-    //     seconds = time(NULL);
-        
-    //     // printf("\ec"); // clear terminal
-    //     for(int i= 0; i < MAX_BELTS; i++){
-    //         printf("%s %d ",belts[i].get_name(), belts[i].luggeg);
-    //     }
-    //     printf("\n");
-        
-    //     bool no_luggege = true;
-    //     for(int i= 0; i < MAX_LUGGEGE; i++){
-    //         if(luggage[i].enable){
-    //             printf("%s %.1f \n",luggage[i].get_name(), luggage[i].distanse);
-    //             no_luggege = false;
-    //         }
-    //     }
-    //     if(no_luggege){
+        if(no_luggege){
             printf("NO_LUGGAGE\n");
-    //     }
-        
-    // }
+        }
     }
 }
 
-void run_gui(void){
+void gui_task(void){
     XEvent event;
     KeySym key;
     char text[255];
