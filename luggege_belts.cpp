@@ -31,8 +31,9 @@ public:
 	void set_name(const char* text){strncpy(_name,text, sizeof(_name)); }
     char* get_name(){return &_name[0];};
     bool enable {0};
-    float distanse{0};
-	unsigned char belts_num{0};
+    float distanse {0};
+	unsigned char belts_num {0};
+    long int start {0};
 private:
     char _name[4];
 };
@@ -50,6 +51,7 @@ public:
 	void set_name(const char* text){strncpy(_name,text, sizeof(_name)); }
     char* get_name(){return &_name[0];};
     int luggeg;
+    int len {10}; // meter
 private: 
     char _name[4];
     float _speed;
@@ -78,43 +80,92 @@ struct coord {
 Belts belts[MAX_BELTS];
 Luggege luggage[MAX_LUGGEGE];
 void one_second_loop();
+void update();
 
 int main() {
 
     init();
     init_gui();
 
-    while (1)
-    {
+    while (1){
         one_second_loop();
         run_gui();
-       
     }
     
     return 0;
 }
 
+void  update(){
+    static unsigned short tic;
+    static unsigned short tic_old;
+    usleep(1);
+    tic += 1;
+    unsigned short diff_tic = tic - tic_old;
+    if(diff_tic >= 1000){
+        tic_old = tic;
+        printf("tic  %d\n", tic);
+    }
+
+    // belts
+    if(luggage[0].enable){
+        ///
+    }
+}
+
 void init(){
+    // this can init in "for" but...
+// char str[80];
+//   strcpy (str,"these ");
+//   strcat (str,"strings ");
+//   strcat (str,"are ");
+//   strcat (str,"concatenated.");
+//   puts (str);
+
+//     char str[33];
+//     char p[34];
+
+//     memset(text_low, 0, sizeof(text));
+//     itoa((int)*_time, p, 10);
+
+//     strcat(text_low, WARHEAD_WARNING_PROTECT_TIME_SYNC);
+// #pragma GCC diagnostic push
+// #pragma GCC diagnostic ignored "-Wstringop-truncation"
+//                 strncat(text_low, p, 4);
+// #pragma GCC diagnostic pop
+
+//     for(int i= 0; i < MAX_BELTS; i++){
+
+//         belts[0].set_name("B1");
+//         printf("%s %d ",belts[i].get_name(), belts[i].luggeg);
+//     }
+    
+//     for(int i= 0; i < MAX_LUGGEGE; i++){
+//             printf("%s %.1f \n",luggage[i].get_name(), luggage[i].distanse);
+//     }
+
     belts[0].set_name("B1");
-    belts[0].set_speed(2);
+    belts[0].set_speed(1);
     belts[1].set_name("B2");
+    belts[1].set_speed(1);
     belts[2].set_name("B3");
+    belts[2].set_speed(1);
     belts[3].set_name("B4");
+    belts[3].set_speed(2);
     
     luggage[0].set_name("L1");
     luggage[1].set_name("L2");
     luggage[2].set_name("L3");
     luggage[3].set_name("L4");
+    
 }
 
 void one_second_loop(){
-    static unsigned int useconds;
+    static time_t seconds;
 
-    usleep(1); //wait 1 usecond
-    useconds += 1;
-    if(useconds > 10000){
-        useconds = 0;
-        printf("\ec"); // clear terminal
+    if(time(NULL) - seconds >= 1){
+        seconds = time(NULL);
+        
+        // printf("\ec"); // clear terminal
         for(int i= 0; i < MAX_BELTS; i++){
             printf("%s %d ",belts[i].get_name(), belts[i].luggeg);
         }
@@ -130,6 +181,7 @@ void one_second_loop(){
         if(no_luggege){
             printf("NO_LUGGAGE\n");
         }
+        
     }
 }
 
