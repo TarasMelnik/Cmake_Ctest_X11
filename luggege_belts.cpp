@@ -16,43 +16,25 @@ extern "C" {
 #include <queue>
 
 
-
-////test
-#include <thread>
-#include <condition_variable>
-#include <queue>
-#include <cstdlib>
-#include <chrono>
-#include <ctime>
-#include <random>
-#include <atomic>
-
-
-
-
-
-
-
 #define NO_LUGGAGE "No luggage"
-#define MAX_LUGGEGE 4
+#define MAX_LUGGAGE 4
 #define MAX_BELTS 4
 
 using namespace std;
 class Luggege
 {
 public:
-    Luggege();
+    Luggege(){};
 
 	void set_name(const char* text){strncpy(_name,text, sizeof(_name)); }
     char* get_name(){return &_name[0];};
     bool enable {0};
     float distanse {0};
-	unsigned char belts_num {0};
+	int belts_num {-1};
     long int start {0};
 private:
     char _name[3];
 };
-Luggege::Luggege(){};
 
 class Belts {
 public:
@@ -61,23 +43,69 @@ public:
     Belts(): len (10){};
     
     //void update(void);
-
+    void set_luggege(int i);
+    void del_luggege(int id);
+    int get_luggege(){return luggage_num[count_luggage]; }
 	int get_speed(){ return _speed;};
 	void set_speed(float speed){_speed = speed;};
 	void set_name(const char* text){strncpy(_name,text, sizeof(_name)); }
     char* get_name(){return &_name[0];};
-    int luggeg;
+    int count_luggage {0};
     int len;
 private: 
+   
+    int luggage_num[MAX_LUGGAGE];
     char _name[3];
     float _speed;
 };
 
-// Belts::Belts(){}
-// char name[], float speed){
-//     set_name(name);
-//     set_speed(speed);
-// };
+void Belts::set_luggege(int i){
+    if(i < MAX_LUGGAGE  && count_luggage < MAX_LUGGAGE){
+        luggage_num[count_luggage] = i;
+        count_luggage += 1;
+    }
+    std::cout << "count_luggage " << count_luggage << std::endl;
+    for (size_t ii = 0; ii < MAX_LUGGAGE; ii++)
+    {
+        std::cout << " " << luggage_num[ii] << " " ;//<< std::endl;
+    }
+    std::cout << std::endl;
+}
+
+void Belts::del_luggege(int id){
+    if(id < MAX_LUGGAGE || count_luggage > 0){
+        if(count_luggage == 1){
+            luggage_num[count_luggage] = 0;
+            count_luggage = 0;
+        } else {
+///test
+            for (size_t ii = 0; ii < MAX_LUGGAGE; ii++)
+            {
+                std::cout << " " << luggage_num[ii] << " " ;//<< std::endl;
+            }
+            std::cout << std::endl;
+
+            int i = 0;
+            for(; i < count_luggage; i++){
+                if(luggage_num[i] == id) break;
+                std::cout << "del lugg sh " << i << " " << id ;//<<std::endl; // test
+            }
+            std::cout << std::endl;
+            //sort arr
+            for (int j = 0; j < count_luggage - i; j++) {
+                luggage_num[i+j] = luggage_num[i+1+j];
+            }
+
+////test
+            for (size_t ii = 0; ii < MAX_LUGGAGE; ii++)
+            {
+                std::cout << " " << luggage_num[ii] << " " ;//<< std::endl;
+            }
+            std::cout << std::endl;
+        }
+    }
+}
+
 
 void init();
 // class student
@@ -112,7 +140,7 @@ Window win;
 GC gc;
 unsigned long black, white, red, blue;
 void init_gui(void);
-void gui_task(void);
+void gui_task(std::queue<int> & _b1);
 void _close(void);
 void draw(void);
 unsigned long RGB(int r, int g, int b);
@@ -123,32 +151,56 @@ struct coord {
 
 
 Belts belts[MAX_BELTS];
-Luggege luggage[MAX_LUGGEGE];
+Luggege luggage[MAX_LUGGAGE];
 void one_second_loop();
 void update();
 
-void belts1_task(std::queue<int> & get, std::queue<int> & send){
+void belts1_task(int num, std::queue<int> & get, std::queue<int> & send){
+
     while (1){
-        sleep(1);
-        printf("belts1\n");
+        usleep(1);
+
+        if(!get.empty()){ // get new luggege
+            int i = get.front();
+            if(i < MAX_LUGGAGE){
+                if(luggage[i].enable){
+                    std::cout << "Luggege " << i << " Active" << std::endl;
+                    belts[num].set_luggege(i);
+                    luggage[i].belts_num = num+1;
+                }
+                get.pop();
+            } else {
+                get.pop();
+                std::cout << "Luggege not existing " << i << std::endl;
+            }
+        }
+        
+        for (int i = 0; i < belts[num].count_luggage; i++){
+            int l_num = belts[num].get_luggege();
+            if(luggage[num].enable){
+                luggage[num].distanse += 1.1f;
+            }
+        }
+        
     }
 }
+
 void belts2_task(std::queue<int> & get, std::queue<int> & send){
     while (1){
         sleep(1);
-        printf("belts2\n");
+        // printf("belts2\n");
     }
 }
 void belts3_task(std::queue<int> & get, std::queue<int> & send){
-    while(1){
+    while(20){
         sleep(1);
-        printf("belts3\n");
+        //printf("belts3\n");
     }
 }
 void belts4_task(std::queue<int> & get, std::queue<int> & send){
-    while (1){
+    while (20){
         sleep(1);
-        printf("belts4\n");
+        // printf("belts4\n");
     }
 }
 
@@ -215,7 +267,7 @@ void belts4_task(std::queue<int> & get, std::queue<int> & send){
 //     {
 //         if(!bl2.empty()){
 //             i = bl2.front();
-//             if(i < MAX_LUGGEGE){
+//             if(i < MAX_LUGGAGE){
 //                 std::cout << "Belts2 "<< i << std::endl;
 //                 bl2.pop();
 //             }
@@ -261,13 +313,6 @@ void belts4_task(std::queue<int> & get, std::queue<int> & send){
 
 
 
-
-
-
-
-
-
-
 int main() {
     std::queue<int> belts_1;
     std::queue<int> belts_2;
@@ -276,12 +321,12 @@ int main() {
     init();
     init_gui();
 
-    std::thread t1(one_second_loop);
-    std::thread th_gui(gui_task);
-    std::thread th_1(belts1_task, std::ref(belts_1), std::ref(belts_2));
-    std::thread th_2(belts2_task, std::ref(belts_2), std::ref(belts_3));
-    std::thread th_3(belts3_task, std::ref(belts_3), std::ref(belts_4));
-    std::thread th_4(belts4_task, std::ref(belts_4), std::ref(belts_1));
+    std::thread th(one_second_loop);
+    std::thread th_gui(gui_task, std::ref(belts_1));
+    std::thread th_b1(belts1_task, 0, std::ref(belts_1), std::ref(belts_2));
+    std::thread th_b2(belts2_task, std::ref(belts_2), std::ref(belts_3));
+    std::thread th_b3(belts3_task, std::ref(belts_3), std::ref(belts_4));
+    std::thread th_b4(belts4_task, std::ref(belts_4), std::ref(belts_1));
     // t2.join();
     // t1.join();
 
@@ -294,23 +339,23 @@ int main() {
     return 0;
 }
 
-void  update(){
-    static unsigned int tic;
-    // static unsigned short tic_old;
-    usleep(1);
-    tic += 1;
-    // unsigned short diff_tic = tic - tic_old;
-    // if(diff_tic >= 1000){
-    //     tic_old = tic;
-    //     printf("tic  %d\n", tic);
-    // }
+// void  update(){
+//     static unsigned int tic;
+//     // static unsigned short tic_old;
+//     usleep(1);
+//     tic += 1;
+//     // unsigned short diff_tic = tic - tic_old;
+//     // if(diff_tic >= 1000){
+//     //     tic_old = tic;
+//     //     printf("tic  %d\n", tic);
+//     // }
 
-    // belts
-    if(luggage[0].enable){
-        if(luggage[0].start)
-        luggage[0].start = tic;
-    }
-}
+//     // belts
+//     if(luggage[0].enable){
+//         if(luggage[0].start)
+//         luggage[0].start = tic;
+//     }
+// }
 
 void init(){
 
@@ -333,17 +378,18 @@ void init(){
 void one_second_loop(){
     while (1) {
 
-        sleep(1); // wait 1 second
-        printf("\ec"); // clear terminal
+        sleep(60); // wait 1 second
+        sleep(60); // wait 1 second
+        // printf("\ec"); // clear terminal
         for(int i= 0; i < MAX_BELTS; i++){
-            printf("%s %d ",belts[i].get_name(), belts[i].luggeg);
+            printf("%s %d ",belts[i].get_name(), belts[i].count_luggage);
         }
         printf("\n");
         
         bool no_luggege = true;
-        for(int i= 0; i < MAX_LUGGEGE; i++){
+        for(int i= 0; i < MAX_LUGGAGE; i++){
             if(luggage[i].enable){
-                printf("%s %.1f \n",luggage[i].get_name(), luggage[i].distanse);
+                printf("%s %d %.1f \n",luggage[i].get_name(), luggage[i].belts_num, luggage[i].distanse);
                 no_luggege = false;
             }
         }
@@ -354,7 +400,7 @@ void one_second_loop(){
     }
 }
 
-void gui_task(void){
+void gui_task(std::queue<int> & _b1){
     XEvent event;
     KeySym key;
     char text[255];
@@ -370,12 +416,17 @@ void gui_task(void){
                         _close();
                     }
                     
-                    for(int i = 0; i < MAX_LUGGEGE; i++){
+                    for(int i = 0; i < MAX_LUGGAGE; i++){
                         if((char)(i+49) == text[0]){ // 49 = '1'
                             if(luggage[i].enable){
+                                if(luggage[i].belts_num > 0){ // delate luggege from belts
+                                    belts[luggage[i].belts_num-1].del_luggege(i);
+                                    luggage[i].belts_num = -1; 
+                                }
                                 luggage[i].enable = false;
                             }else {
                                 luggage[i].enable = true;
+                                _b1.push(i);
                             }
                         }
                     }
