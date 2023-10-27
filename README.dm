@@ -1,17 +1,20 @@
+This project use the Cmake version 3.22.1
+X11 view emulation of move luggage and cache keyboard 
 
-##build
+Command button:
+ - '1' add/delate luggage to belt
+ - '2' add/delate luggage to belt
+ - '3' add/delate luggage to belt
+ - '4' add/delate luggage to belt
+To quit from program
+ - 'q' quit or press Ctrl+C in terminal
 
-/build/cmake --build ..
-## install file:
+## install Cmake file:
 sudo apt-get install cmake
 sudo apt-get update && sudo apt-get install build-essential
 
-DISCLAIMER: I am not a linux professional, just found a way for my own problem with glibc not found error msg:
-
-maybe you cannot use the binary since it was compiled with gcc-11 and your gcc version of your linux distribution and version only is gcc-9 and therefore only provides glibc_2.31 (I guess). you can try to compile the program yourself from source. 
-I had to do this with the new stockfish version 15, which also uses updated glibc_2.32/2.33/2.34 and my linux-mint does not provide that. 
-But compiling from source worked like a charm. Maybe this is an option for you.
-
+## Install GUI pkg
+sudo apt-get install libx11-dev libxrandr-dev
 
 ## GUI:
 - X11  - use
@@ -19,10 +22,39 @@ But compiling from source worked like a charm. Maybe this is an option for you.
 - graphics.h library - not use
 - gnuplot - not use
 
-sudo apt install libx11-dev
+##type for init project
+./cmake .
+
+##build
+.cmake --build .
+
+## run project
+./luggege_belts
+
+## Tested
+- WSL Ubuntu 20.04 passed
+- Raspberry Ubuntu 20.04 passed??
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/build/cmake --build ..
+## install GUI pkg
+------------------------------------------------------------------------------sudo apt install libx11-dev
 sudo apt-get install libx11-dev libxrandr-dev
- ???? sudo apt-get install libx11-dev libxpm-dev libxft-dev libxext-dev mesa-common-dev
+-------------------------------------------------------------------- ???? sudo apt-get install libx11-dev libxpm-dev libxft-dev libxext-dev mesa-common-dev
  
-# finde:
-find /usr/lib -iname *x11*
+-------------------------------------------------------------------# finde:
+--------------------------------------------------------------------find /usr/lib -iname *x11*
 
