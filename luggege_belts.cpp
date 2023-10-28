@@ -15,17 +15,23 @@ extern "C" {
 #include <queue>
 
 #define DISPLAY_HEIGHT 640
-#define DISPLAY_WIDHD  640
+#define DISPLAY_WIDHT  640
 #define NO_LUGGAGE "No luggage"
 #define MAX_LUGGAGE 4
 #define MAX_BELTS 4
 #define BELTS_LEN 10.0f
+#define LUGGAGE_SPEED_MULT 0.00017f
+#define THREAD_SLEEP 100
 
 using namespace std;
 class Luggege
 {
 public:
     Luggege(){};
+    struct coord {
+        int x;
+        int y;
+    } dot;
 
 	void set_name(const char* text){strncpy(_name,text, sizeof(_name)); }
     char* get_name(){return &_name[0];};
@@ -39,11 +45,13 @@ private:
 
 class Belts {
 public:  
-    Belts(): len (BELTS_LEN){};
+    Belts(): len (BELTS_LEN) {};
     struct coord {
-        int x;
-        int y;
-    } dot;
+        int start_x;
+        int start_y;
+        int end_x;
+        int end_y;
+    } line;
 
     //void _thread(void);
     void set_luggege(int id);
@@ -86,7 +94,6 @@ void Belts::del_luggege(int id){
     }
 }
 
-void init();
 
 // GUI
 Display *dis;
@@ -98,7 +105,6 @@ unsigned long black, white, red, blue;
 void init_gui(void);
 void gui_task(std::queue<int> & _b1);
 void _close(void);
-void draw(void);
 unsigned long RGB(int r, int g, int b);
 struct coord {
  int x;
@@ -114,7 +120,7 @@ void update();
 void belts1_task(int id, std::queue<int> & get, std::queue<int> & send){
 
     while (1){
-        usleep(1);
+        usleep(THREAD_SLEEP);
 
         if(!get.empty()){ // get new luggege
             int l_id = get.front(); // need rewrite to get pointer luggege[X]
@@ -132,11 +138,11 @@ void belts1_task(int id, std::queue<int> & get, std::queue<int> & send){
         for (int i = 0; i < belts[id].count_luggage; i++){
             int l_num = belts[id].get_luggege(i);
             if(luggage[l_num].enable){
-                luggage[l_num].distanse += (0.0001f * belts[id].get_speed());
+                luggage[l_num].distanse += (LUGGAGE_SPEED_MULT * belts[id].get_speed());
                 if(luggage[l_num].distanse >= belts[id].len){
-                    luggage[l_num].distanse = 0.0f;
                     belts[id].del_luggege(l_num);
                     send.push(l_num);
+                    luggage[l_num].distanse = 0.0f;
                 }
             }
         }
@@ -146,7 +152,7 @@ void belts1_task(int id, std::queue<int> & get, std::queue<int> & send){
 void belts2_task(int id, std::queue<int> & get, std::queue<int> & send){
    
     while (1){
-        usleep(1);
+        usleep(THREAD_SLEEP);
 
         if(!get.empty()){ // get new luggege
             int l_id = get.front();
@@ -164,7 +170,7 @@ void belts2_task(int id, std::queue<int> & get, std::queue<int> & send){
         for (int i = 0; i < belts[id].count_luggage; i++){
             int l_num = belts[id].get_luggege(i);
             if(luggage[l_num].enable){
-                luggage[l_num].distanse += (0.0001f * belts[id].get_speed());
+                luggage[l_num].distanse += (LUGGAGE_SPEED_MULT * belts[id].get_speed());
                 if(luggage[l_num].distanse >= belts[id].len){
                     luggage[l_num].distanse = 0.0f;
                     belts[id].del_luggege(l_num);
@@ -178,7 +184,7 @@ void belts2_task(int id, std::queue<int> & get, std::queue<int> & send){
 void belts3_task(int id, std::queue<int> & get, std::queue<int> & send){
     
     while (1){
-        usleep(1);
+        usleep(THREAD_SLEEP);
 
         if(!get.empty()){ // get new luggege
             int l_id = get.front();
@@ -196,7 +202,7 @@ void belts3_task(int id, std::queue<int> & get, std::queue<int> & send){
         for (int i = 0; i < belts[id].count_luggage; i++){
             int l_num = belts[id].get_luggege(i);
             if(luggage[l_num].enable){
-                luggage[l_num].distanse += (0.0001f * belts[id].get_speed());
+                luggage[l_num].distanse += (LUGGAGE_SPEED_MULT * belts[id].get_speed());
                 if(luggage[l_num].distanse >= belts[id].len){
                     luggage[l_num].distanse = 0.0f;
                     belts[id].del_luggege(l_num);
@@ -209,7 +215,7 @@ void belts3_task(int id, std::queue<int> & get, std::queue<int> & send){
 void belts4_task(int id, std::queue<int> & get, std::queue<int> & send){
     
     while (1){
-        usleep(1);
+        usleep(THREAD_SLEEP);
 
         if(!get.empty()){ // get new luggege
             int l_id = get.front();
@@ -227,7 +233,7 @@ void belts4_task(int id, std::queue<int> & get, std::queue<int> & send){
         for (int i = 0; i < belts[id].count_luggage; i++){
             int l_num = belts[id].get_luggege(i);
             if(luggage[l_num].enable){
-                luggage[l_num].distanse += (0.0001f * belts[id].get_speed());
+                luggage[l_num].distanse += (LUGGAGE_SPEED_MULT * belts[id].get_speed());
                 if(luggage[l_num].distanse >= belts[id].len){
                     luggage[l_num].distanse = 0.0f;
                     belts[id].del_luggege(l_num);
@@ -240,34 +246,7 @@ void belts4_task(int id, std::queue<int> & get, std::queue<int> & send){
 }
 
 int main() {
-    std::queue<int> belts_1;
-    std::queue<int> belts_2;
-    std::queue<int> belts_3;
-    std::queue<int> belts_4;
-    init();
-    init_gui();
-
-    std::thread th(one_second_loop);
-    std::thread th_gui(gui_task, std::ref(belts_1));
-    std::thread th_b1(belts1_task, 0, std::ref(belts_1), std::ref(belts_2));
-    std::thread th_b2(belts2_task, 1, std::ref(belts_2), std::ref(belts_3));
-    std::thread th_b3(belts3_task, 2, std::ref(belts_3), std::ref(belts_4));
-    std::thread th_b4(belts4_task, 3, std::ref(belts_4), std::ref(belts_1));
     
-    th.join();
-    th_gui.join();
-    th_b1.join();
-    th_b2.join();
-    th_b3.join();
-    th_b4.join();
-
-    while (1){exit(0);}
-    
-    return 0;
-}
-
-void init(){
-
     belts[0].set_name("B1");
     belts[0].set_speed(1.0f);
     belts[1].set_name("B2");
@@ -281,7 +260,31 @@ void init(){
     luggage[1].set_name("L2");
     luggage[2].set_name("L3");
     luggage[3].set_name("L4");
+
+    std::queue<int> q_belts_1;
+    std::queue<int> q_belts_2;
+    std::queue<int> q_belts_3;
+    std::queue<int> q_belts_4;
+
+    init_gui();
+    std::thread th_gui(gui_task, std::ref(q_belts_1));
     
+    std::thread th(one_second_loop);
+    std::thread th_b1(belts1_task, 0, std::ref(q_belts_1), std::ref(q_belts_2));
+    std::thread th_b2(belts2_task, 1, std::ref(q_belts_2), std::ref(q_belts_3));
+    std::thread th_b3(belts3_task, 2, std::ref(q_belts_3), std::ref(q_belts_4));
+    std::thread th_b4(belts4_task, 3, std::ref(q_belts_4), std::ref(q_belts_1));
+    
+    th.join();
+    th_gui.join();
+    th_b1.join();
+    th_b2.join();
+    th_b3.join();
+    th_b4.join();
+
+    while (1){exit(0);}
+    
+    return 0;
 }
 
 void one_second_loop(){
@@ -298,6 +301,7 @@ void one_second_loop(){
         for(int i= 0; i < MAX_LUGGAGE; i++){
             if(luggage[i].enable){
                 printf("%s %d %.1f \n",luggage[i].get_name(), luggage[i].belts_num, luggage[i].distanse);
+                //printf("%s %d %.1f  x %d y %d\n",luggage[i].get_name(), luggage[i].belts_num, luggage[i].distanse, luggage[i].dot.x, luggage[i].dot.y );
                 no_luggege = false;
             }
         }
@@ -312,13 +316,11 @@ void gui_task(std::queue<int> & _b1){
     XEvent event;
     KeySym key;
     char text[255];
+    XNextEvent(dis, &event);
     while (1){
         while (XPending(dis) > 0) {
             
             XNextEvent(dis, &event);
-            if(event.type == Expose && event.xexpose.count == 0) {
-                draw();
-            }
             if(event.type == KeyPress && XLookupString(&event.xkey, text, 255, &key,0) == 1) {
                 if(text[0] == 'q'){
                     _close();
@@ -329,7 +331,8 @@ void gui_task(std::queue<int> & _b1){
                         if(luggage[i].enable){
                             if(luggage[i].belts_num > 0){ // delate luggege from belts
                                 belts[luggage[i].belts_num-1].del_luggege(i);
-                                luggage[i].belts_num = -1; 
+                                luggage[i].belts_num = -1;
+                                luggage[i].distanse = 0.0f;
                             }
                             luggage[i].enable = false;
                         }else {
@@ -339,42 +342,77 @@ void gui_task(std::queue<int> & _b1){
                     }
                 }
             }
-
-            if(event.type == ButtonPress) {
-                int x = event.xbutton.x, y=event.xbutton.y;
-                XSetForeground(dis,gc,red);
-                XDrawLine(dis,win,gc,dot.x,dot.y,x,y);
-                XSetForeground(dis,gc,blue);
-                strcpy(text,"1");
-                XDrawString(dis,win,gc,x,y,text,strlen(text));
-                dot.x = x;
-                dot.y = y;
-            }
         }
+
+        usleep(THREAD_SLEEP); // 50Hz
         XClearWindow(dis, win);
         for(int j = 0; j < MAX_BELTS; j++){
-            for (int i = 0; i < belts[id].count_luggage; i++){
-                int l_num = belts[id].get_luggege(i);
+            XSetForeground(dis,gc,blue);
+            XDrawLine(dis,win,gc,
+            belts[j].line.start_x,
+            belts[j].line.start_y,
+            belts[j].line.end_x,
+            belts[j].line.end_y
+            );
+
+            XDrawString(dis,win,gc,
+            belts[j].line.end_x,
+            belts[j].line.end_y,
+            belts[j].get_name(),
+            strlen(belts[j].get_name())
+            );
+        
+            for (int i = 0; i < belts[j].count_luggage; i++){
+                int l_num = belts[j].get_luggege(i);
                 if(luggage[l_num].enable){
-                    luggage[l_num].distanse += (0.0001f * belts[id].get_speed());
-                    if(luggage[l_num].distanse >= belts[id].len){
-                        luggage[l_num].distanse = 0.0f;
-                        belts[id].del_luggege(l_num);
-                        send.push(l_num);
-                    }
+
+                    int diff_x = belts[j].line.end_x - belts[j].line.start_x;
+                    int diff_y = belts[j].line.end_y - belts[j].line.start_y;
+                    float distanse = luggage[l_num].distanse;
+                    if(diff_x == 0){
+                        luggage[l_num].dot.x = belts[j].line.start_x;
+                        luggage[l_num].dot.y = (uint32_t) belts[j].line.start_y + (diff_y * distanse)/ belts[j].len;
+                    } else if(diff_y == 0) {
+                        luggage[l_num].dot.x = (uint32_t) belts[j].line.start_x + (diff_x * distanse)/ belts[j].len;
+                        luggage[l_num].dot.y = belts[j].line.start_y;
+                    } 
+                    memset(text,0,sizeof(text));
+                    //sprintf(text, "%s %0.1f x=%d y=%d",luggage[l_num].get_name(), luggage[l_num].distanse, luggage[l_num].dot.x ,luggage[l_num].dot.y);
+                    sprintf(text, "%s %0.1f",luggage[l_num].get_name(), luggage[l_num].distanse);
+                    
+                    XSetForeground(dis,gc,white);
+                    XDrawString(dis,win,gc,luggage[l_num].dot.x,luggage[l_num].dot.y,text,strlen(text));
+                    XDrawPoint(dis,win,gc, luggage[l_num].dot.x,luggage[l_num].dot.y);
                 }
             }
         }
-        for(int i= 0; i < MAX_LUGGAGE; i++){
-            if(luggage[i].enable){
-                XDrawPoint(Display *display, Drawable d, GC gc, int x, int y);
-                XDrawPoint(dis,win,gc,dot.x,dot.y);
-            }
-        }
+
     }
 }
 
 void init_gui() {
+
+    belts[0].line.start_x = DISPLAY_WIDHT/2 - (DISPLAY_WIDHT/4);
+    belts[0].line.start_y = DISPLAY_HEIGHT/2 + (DISPLAY_HEIGHT/4);
+    belts[0].line.end_x =   DISPLAY_WIDHT/2 + (DISPLAY_WIDHT/4);
+    belts[0].line.end_y =   DISPLAY_HEIGHT/2 + (DISPLAY_HEIGHT/4);
+    
+    belts[1].line.start_x = belts[0].line.end_x;  
+    belts[1].line.start_y = belts[0].line.end_y; 
+    belts[1].line.end_x = DISPLAY_WIDHT/2 + (DISPLAY_WIDHT/4);
+    belts[1].line.end_y = DISPLAY_HEIGHT/2 - (DISPLAY_HEIGHT/4);
+
+    belts[2].line.start_x = belts[1].line.end_x; 
+    belts[2].line.start_y = belts[1].line.end_y; 
+    belts[2].line.end_x = DISPLAY_WIDHT/2 - (DISPLAY_WIDHT/4);
+    belts[2].line.end_y = DISPLAY_HEIGHT/2 - (DISPLAY_HEIGHT/4);
+
+    belts[3].line.start_x = belts[2].line.end_x;  
+    belts[3].line.start_y = belts[2].line.end_y; 
+    belts[3].line.end_x = DISPLAY_WIDHT/2 - (DISPLAY_WIDHT/4);
+    belts[3].line.end_y = DISPLAY_HEIGHT/2 + (DISPLAY_HEIGHT/4);
+
+
     dis = XOpenDisplay((char *)0);
     scrn_num = DefaultScreen(dis);
     black = BlackPixel(dis, scrn_num);
@@ -384,9 +422,9 @@ void init_gui() {
     screen = ScreenOfDisplay(dis, scrn_num);
     dot.x = 0;(screen->width/2 - screen->width/10); // start position
     dot.y = 0;(screen->height/2 - screen->height/10); 
-    win = XCreateSimpleWindow(dis, DefaultRootWindow(dis), 0, 0, 640, 640, 5, white, black);
+    win = XCreateSimpleWindow(dis, DefaultRootWindow(dis), 0, 0, DISPLAY_WIDHT, DISPLAY_HEIGHT, 5, white, black);
     XSetStandardProperties(dis, win, "Luggege belts", NULL, None, NULL, 0, NULL);
-    XSelectInput(dis, win, ExposureMask | ButtonPressMask | KeyPressMask);
+    XSelectInput(dis, win, ExposureMask  | KeyPressMask);//| ButtonPressMask
     gc = XCreateGC(dis, win, 0,0);
     XSetBackground(dis,gc,white);
     XSetForeground(dis,gc,black);
@@ -399,10 +437,6 @@ void _close() {
     XDestroyWindow(dis, win);
     XCloseDisplay(dis);
     exit(0);
-}
-
-void draw() {
-    XClearWindow(dis, win);
 }
 
 inline unsigned long RGB(int r, int g, int b) {
