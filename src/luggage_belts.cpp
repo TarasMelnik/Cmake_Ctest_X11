@@ -24,8 +24,10 @@ extern "C" {
 #define THREAD_SLEEP 100
 
 using namespace std;
+
 class Luggege
 {
+    friend class Belts;
 public:
     Luggege(){};
     struct coord {
@@ -52,8 +54,15 @@ public:
         int end_x;
         int end_y;
     } line;
+    Luggege *luggage;
 
     //void _thread(void);
+    // std::queue<int> q_belts;
+    void task(std::queue<Luggege*> & get, std::queue<Luggege*> & send);
+    void start_task(std::queue<Luggege*> & get, std::queue<Luggege*> & send) {
+        std::thread th(&Belts::task, this, std::ref(get), std::ref(send));
+        th.join();
+    }
     void set_luggege(int id);
     void del_luggege(int id);
     int get_luggege(int cnt){return luggage_num[cnt]; }
@@ -63,6 +72,7 @@ public:
     char* get_name(){return &_name[0];};
     int count_luggage {0};
     int len;
+    int id;
 private: 
    
     int luggage_num[MAX_LUGGAGE];
@@ -94,6 +104,38 @@ void Belts::del_luggege(int id){
     }
 }
 
+void Belts::task(std::queue<Luggege*> & get, std::queue<Luggege*> & send){
+
+    while (1){
+        usleep(THREAD_SLEEP);
+
+        if(!get.empty()){ // get new luggege
+            luggage = get.front(); // need rewrite to get pointer luggege[X]
+            if(count_luggage < MAX_LUGGAGE){
+                if(luggage->enable){
+                    set_luggege(count_luggage);
+                    luggage->belts_num = id+1;
+                }
+                get.pop();
+            } else {
+                get.pop();
+            }
+        }
+
+        // for (int i = 0; i < count_luggage; i++){
+        //     int l_num = get_luggege(i);
+        //     if(luggage[l_num].enable){
+        //         luggage[l_num].distanse += (LUGGAGE_SPEED_MULT * get_speed());
+        //         if(luggage[l_num].distanse >= len){
+        //             del_luggege(l_num);
+        //             send.push(l_num);
+        //             luggage[l_num].distanse = 0.0f;
+        //         }
+        //     }
+        // }
+        
+    }
+}
 
 // GUI
 Display *dis;
@@ -423,7 +465,7 @@ void init_gui() {
     dot.x = 0;(screen->width/2 - screen->width/10); // start position
     dot.y = 0;(screen->height/2 - screen->height/10); 
     win = XCreateSimpleWindow(dis, DefaultRootWindow(dis), 0, 0, DISPLAY_WIDHT, DISPLAY_HEIGHT, 5, white, black);
-    XSetStandardProperties(dis, win, "Luggege belts", NULL, None, NULL, 0, NULL);
+    XSetStandardProperties(dis, win, "Luggage belts", NULL, None, NULL, 0, NULL);
     XSelectInput(dis, win, ExposureMask  | KeyPressMask);//| ButtonPressMask
     gc = XCreateGC(dis, win, 0,0);
     XSetBackground(dis,gc,white);
