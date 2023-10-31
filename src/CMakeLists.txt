@@ -19,7 +19,10 @@ SET(CMAKE_C_FLAGS   "-O3 -lpthread -lX11 -Wall -std=c++0x -std=c++11 -pthread")
 SET(CMAKE_CXX_FLAGS "-O3 -lpthread -lX11 -Wall -std=c++0x -std=c++11 -pthread")
 
 if(X11_FOUND)
-    add_executable(${PROJ_NAME} luggage_belts.cpp)
+    add_executable(${PROJ_NAME} luggage_belts.cpp
+                                Luggage.cpp
+                                Belts.cpp
+                                )
     target_link_libraries(${PROJ_NAME} ${X11_LIBRARIES})
 else(X11_FOUND)
     message(STATUS "Error X11 missing\n try install sudo apt-get install libx11-dev libxrandr-dev}")

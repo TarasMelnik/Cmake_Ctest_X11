@@ -1,6 +1,7 @@
 set -eu
 
-FILE="/build/src/luggage_belts"
+#FILE="../build/src/luggage_belts"
+FILE="luggage_belts"
 if [ -f $FILE ]; then
     echo "File found! Test passed!"
 else

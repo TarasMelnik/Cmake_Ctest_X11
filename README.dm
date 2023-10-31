@@ -23,6 +23,7 @@ sudo apt-get install libx11-dev libxrandr-dev
  # gnuplot - not use
 
 ##type for init project
+mkdir build
 cd build
 ./cmake ..
 
