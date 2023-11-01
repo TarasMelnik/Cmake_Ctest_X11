@@ -25,15 +25,19 @@ sudo apt-get install libx11-dev libxrandr-dev
 ##type for init project
 mkdir build
 cd build
-./cmake ..
+cmake ..
 
 ##build
-.cmake --build .
+cmake --build .
 
 ## run project
 ./src/luggege_belts
 or
 cd src && ./luggege_belts
+
+## run tests
+ctest --verbose -R . --output-on-failure --gtest_also_run_disabled_tests
+
 
 ## enjoy 
 

@@ -8,11 +8,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
-// #include <Belts.h>
 #include "luggage_belts.h"
 
-
-// #define MAX_LUGGAGE 10
 
 class Luggage
 {
